@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<TableLayout android:layout_width="fill_parent" android:layout_height="fill_parent"
+             android:id="@+id/main_table" xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <TableRow
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:padding="15dp">
+
+        <TextView
+                android:text="You"
+                android:gravity="left"
+                android:textSize="10sp"
+                android:layout_width="0dp"
+                android:layout_weight=".20"
+                >
+        </TextView>
+
+        <TextView
+                android:id="@+id/score"
+                android:layout_width="0dp"
+                android:layout_weight=".60"
+                android:gravity="center"
+                android:textSize="20sp">
+        </TextView>
+
+        <TextView
+                android:text="Computer"
+                android:gravity="center"
+                android:textSize="10sp"
+                android:layout_width="0dp"
+                android:layout_weight=".20"
+                />
+    </TableRow>
+
+    <TableRow android:id="@+id/game_grid_container" android:layout_width="wrap_content" android:layout_height="wrap_content"
+              android:gravity="center">
+        <LinearLayout android:layout_width="wrap_content"
+                      android:orientation="horizontal"
+                      android:layout_height="wrap_content" android:layout_gravity="center" android:gravity="center">
+
+        </LinearLayout>
+    </TableRow>
+
+    <TableRow android:id="@+id/end_game_message_container" android:layout_width="wrap_content" android:layout_height="wrap_content"
+              android:gravity="center" android:padding="15dp">
+        <TextView
+                android:id="@+id/end_game_message"
+                android:layout_width="wrap_content"
+                android:gravity="center"
+                android:text="center"
+                android:padding="40dp"
+                android:textSize="25sp">
+        </TextView>
+    </TableRow>
+    
+    <TableRow android:id="@+id/reset_btn_container" android:layout_width="wrap_content" android:layout_height="wrap_content"
+              android:gravity="center">
+
+        <Button
+                android:id="@+id/reset_btn"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Try again"
+                android:textSize="15sp"/>
+
+    </TableRow>
+
+    <TableRow android:layout_width="wrap_content" android:layout_height="wrap_content"
+              android:gravity="center" android:padding="15dp">
+        <TextView
+                android:id="@+id/countdown"
+                android:layout_width="wrap_content"
+                android:gravity="center"
+                android:textSize="15sp"
+                >
+        </TextView>
+    </TableRow>
+
+</TableLayout>
+
+    
