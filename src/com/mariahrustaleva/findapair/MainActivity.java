@@ -110,31 +110,66 @@ public class MainActivity extends Activity {
 		createShuffledDeck();
 		
 		// add cards to container view
-		placeCardsOnTheTable();
+		//placeCardsOnTheTable();
 	}
 
 	private void createShuffledDeck() {
-		cards = new Card[COL_COUNT][ROW_COUNT];
+		cards 						= new Card[COL_COUNT][ROW_COUNT];
+		Random random 				= new Random();
+		ArrayList<Integer> listA 	= new ArrayList<Integer>();
+		ArrayList<Integer> listB 	= new ArrayList<Integer>();
 		
-		ArrayList<Integer> list = new ArrayList<Integer>();
+		ArrayList<Integer> two_extra 	= new ArrayList<Integer>();
 
-		int size = ROW_COUNT * COL_COUNT;
+		int size = ROW_COUNT * COL_COUNT,
+				rand, val, index, row, col;
+		
 
-		for (int i = 0; i < size; i++) {
-			list.add(Integer.valueOf(i));
+		for (int i = 0; i < size/2; i++) {
+			listA.add(Integer.valueOf(i));
+			listB.add(Integer.valueOf(i));
 		}
+		
+		ArrayList<Integer> currentList = listA;
+		ArrayList<Integer> pendingList = listB;
 
-		Random r = new Random();
+		for (int i = 0; i < size; i+=4) {
 
-		// make a random deck of paired cards
-		for (int i = size - 1; i >= 0; i--) {
-			int t = 0;
-			if (i > 0) {
-				t = r.nextInt(i);
-			}
-			t = list.remove(t).intValue();
+			// top left element of every group
+			col = i % COL_COUNT;
+			row = i / COL_COUNT;
 			
-			cards[i % COL_COUNT][i / COL_COUNT] = createCard(t % (size / 2));
+			for(int j = 0; j < 4; j++){
+				rand = currentList.size() > 1 ? random.nextInt(currentList.size()) : 0;
+				val = currentList.remove(rand);
+				
+				//current element of a group
+				int col_i = col/2 + j%2;		
+				int row_i = row/2 + j/2;
+				
+				Log.i(i + " : " + j + " : " + val, "-");
+				
+				if (i == 0 && j < 2 ){
+					two_extra.add(pendingList.remove(pendingList.indexOf(val)));
+				}
+				
+				//cards[row_i][col_i] = createCard(val);
+			}
+			
+			if(i == 0 ) {
+				currentList.add(two_extra.get(0));
+				currentList.add(two_extra.get(1));
+			}
+			
+			if(currentList == listA) {
+				currentList = listB;
+			}
+			else {
+				currentList = listA;
+			}
+			
+			
+
 		}
 	}
 	
