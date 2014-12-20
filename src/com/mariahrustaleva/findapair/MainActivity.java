@@ -35,6 +35,7 @@ public class MainActivity extends Activity {
 	
 	private OnClickListener cardButtonListener;
 	private OnClickListener groupButtonListener;
+	private OnClickListener pvpButtonListener;
 	private OnClickListener cardListener;
 	
 	private OnClickListener selectGameListener;
@@ -83,6 +84,7 @@ public class MainActivity extends Activity {
 		// add listeners
 		cardButtonListener = new CardButtonListener();
 		groupButtonListener = new GroupButtonListener();
+		pvpButtonListener = new PVPListener();
 		
 		selectGameListener = new SelectGameListener();
 		
@@ -129,7 +131,7 @@ public class MainActivity extends Activity {
 			cardListener = groupButtonListener;
 		}
 		else {
-			// TODO add pvp logic
+			cardListener = pvpButtonListener;
 		}
 
 		score_view.setVisibility(View.VISIBLE);
@@ -484,14 +486,10 @@ public class MainActivity extends Activity {
 				// match is available
 				else if (matching_groups_ids.contains(card.group_id)) {
 					user_score++;
-					Log.i("else", "else");
 
 					if (matching_groups_ids.size() == 1) {
-						Log.i("one", "one " + matching_groups_ids.size());
 						endTurn();
 					} else {
-						Log.i("two", "two " + matching_groups_ids.size());
-
 						matching_groups_ids.remove(matching_groups_ids
 								.indexOf(card.group_id));
 						removeGroupFromTable(getGroupById(card.group_id));
@@ -520,7 +518,7 @@ public class MainActivity extends Activity {
 								+ time_count);
 
 						if (time_count == 0) {
-							computer_score += matching_groups_ids.size();
+							computer_score += matching_groups_ids.size() - 1;
 							endTurn();
 						}
 
@@ -534,8 +532,6 @@ public class MainActivity extends Activity {
 		}
 
 		private void endTurn() {
-			Log.i("endTurn", "endTurn");
-
 			future_task.cancel(true);
 
 			// clear countdown
@@ -610,7 +606,107 @@ public class MainActivity extends Activity {
 	}
 	//GROUP PAIRS LOGIC END
 	
-	
+	//PVP LOGIC START
+	// listener for a card button
+	class PVPListener implements OnClickListener {
+		Card first_card;
+		Card second_card;
+		
+		private int opponent_score = 0;
+		private int user_score = 0;
+		private Boolean current_player_is_user = true;
+		
+		private ScheduledExecutorService timer = Executors
+				.newSingleThreadScheduledExecutor();
+
+		@Override
+		public void onClick(View v) {
+			synchronized (lock) {
+				
+				Card card = (Card)v;
+				
+				if(first_card == null){
+					first_card = card;
+					first_card.setBackgroundDrawable(images.get(card.id));
+				} 
+				
+				else if (first_card != null && second_card==null && card != first_card){
+					second_card = card;
+					second_card.setBackgroundDrawable(images.get(card.id));
+					
+					timer.schedule(new Runnable() {
+						@Override
+						public void run() {
+							runOnUiThread(new Runnable() {
+								@Override
+								public void run() {
+									endTurn();
+								}
+							});
+						}
+					}, 1000, TimeUnit.MILLISECONDS);
+
+				}
+			}
+		}
+		
+		private void endTurn(){
+			if(first_card.id == second_card.id){
+				if(current_player_is_user) {
+					user_score++;
+				}
+				else{
+					opponent_score++;
+				}
+				
+				first_card.setVisibility(View.INVISIBLE);
+				second_card.setVisibility(View.INVISIBLE);
+			}
+			
+			else {
+				first_card.setBackgroundDrawable(backImage);
+				second_card.setBackgroundDrawable(backImage);
+			}
+			
+			current_player_is_user = !current_player_is_user;
+			first_card = null;
+			second_card = null;
+			
+			//update score
+			score_view.setText(user_score  + ":" + opponent_score);
+			
+			//check end game
+			int turns = user_score + opponent_score;
+			if(turns == ROW_COUNT * COL_COUNT / 2){
+				String msg;
+				
+				if(user_score < opponent_score) {
+					msg = "Opponent wins!";
+				}
+				else if(user_score > opponent_score) {
+					msg = "You won!";
+				}
+				else {
+					msg = "Draw.";
+				}
+				
+				// show end game messages
+				end_game_message.setText(msg);
+				game_grid_container.setVisibility(View.GONE);
+				end_game_message_container.setVisibility(View.VISIBLE);
+				reset_btn_container.setVisibility(View.VISIBLE);
+				
+				reset();
+
+			}
+		}
+		
+		private void  reset(){
+			opponent_score = 0;
+			user_score = 0;
+		}
+	}
+	//PVP LOGIC END
 
 
 }
