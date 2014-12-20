@@ -67,6 +67,41 @@
                 android:textSize="15sp"/>
 
     </TableRow>
+    
+    <TableRow android:id="@+id/normal_game_btn_container" android:layout_width="wrap_content" android:layout_height="wrap_content"
+              android:gravity="center">
+
+        <Button
+                android:id="@+id/normal_game_btn"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Normal Game"
+                android:textSize="15sp"/>
+    </TableRow>
+    
+    <TableRow android:id="@+id/group_game_btn_container" android:layout_width="wrap_content" android:layout_height="wrap_content"
+              android:gravity="center">
+    
+        <Button
+	        android:id="@+id/group_game_btn"
+	        android:layout_width="wrap_content"
+	        android:layout_height="wrap_content"
+	        android:text="Card Groups"
+	        android:textSize="15sp"/>
+    </TableRow>
+    
+    <TableRow android:id="@+id/pvp_game_btn_container" android:layout_width="wrap_content" android:layout_height="wrap_content"
+              android:gravity="center">
+    
+        <Button
+	        android:id="@+id/pvp_game_btn"
+	        android:layout_width="wrap_content"
+	        android:layout_height="wrap_content"
+	        android:text="Player vs Player "
+	        android:textSize="15sp"/>
+    </TableRow>
+
+    
 
     <TableRow android:layout_width="wrap_content" android:layout_height="wrap_content"
               android:gravity="center" android:padding="15dp">
