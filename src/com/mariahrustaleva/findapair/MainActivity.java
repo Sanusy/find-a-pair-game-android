@@ -22,16 +22,18 @@ import android.widget.TextView;
 import android.widget.Button;
 
 public class MainActivity extends Activity {
-	private static int ROW_COUNT = 6;
-	private static int COL_COUNT = 6;
-	private static int MAX_TIME = 5;
-	private static Object lock = new Object();
+	public static int ROW_COUNT = 6;
+	public static int COL_COUNT = 6;
+	public static int MAX_TIME = 5;
+	public static Object lock = new Object();
+
 
 	// UI
 	private Context context;
 	private Drawable backImage;
-	private Card[][] cards;
 	private List<Drawable> images;
+	private Card[][] cards;
+
 	
 	private OnClickListener cardButtonListener;
 	private OnClickListener groupButtonListener;
@@ -61,7 +63,7 @@ public class MainActivity extends Activity {
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_main);
-
+		
 		// set view ref's
 		mainTable = (TableLayout) findViewById(R.id.main_table);
 		game_grid_container = (TableRow) findViewById(R.id.game_grid_container);
@@ -79,10 +81,13 @@ public class MainActivity extends Activity {
 		
 		normal_game_btn = (Button) findViewById(R.id.normal_game_btn);
 		group_game_btn = (Button) findViewById(R.id.group_game_btn);
-		pvp_game_btn = (Button) findViewById(R.id.pvp_game_btn); 
+		pvp_game_btn = (Button) findViewById(R.id.pvp_game_btn);
+		
+		createCards();
+		loadImages();
 		
 		// add listeners
-		cardButtonListener = new CardButtonListener();
+		cardButtonListener = new NormalGameCardClickListener(this, cards, images);
 		groupButtonListener = new GroupButtonListener();
 		pvpButtonListener = new PVPListener();
 		
@@ -94,8 +99,18 @@ public class MainActivity extends Activity {
 		
 		reset_btn.setOnClickListener(new ResetButtonListener());
 
-		loadImages();
+		
 		newGame();
+	}
+	
+	private void createCards() {
+		cards = new Card[COL_COUNT][ROW_COUNT];
+		
+		for (int y = 0; y < ROW_COUNT; y++) {
+			for (int x = 0; x < COL_COUNT; x++) {
+				cards[x][y] = new Card(context);
+			}
+		}
 	}
 
 	private void loadImages() {
@@ -192,7 +207,7 @@ public class MainActivity extends Activity {
 				int col_i = col + j % 2;
 				int row_i = row + j / 2;
 
-				cards[col_i][row_i] = createCard(val, i / 4);
+				cards[col_i][row_i].set(val, i / 4, backImage, cardListener);
 			}
 
 			if (i == 0) {
@@ -209,8 +224,13 @@ public class MainActivity extends Activity {
 		}
 	}
 
+	private Card setCard(Card card, int id, int group_id) {
+		
+		return card;
+	}
+	
 	private Card createCard(int id, int group_id) {
-		Card card = new Card(context, id, group_id);
+		Card card = new Card(context);
 		card.setBackgroundDrawable(backImage);
 		card.setOnClickListener(cardListener);
 		return card;
@@ -260,137 +280,7 @@ public class MainActivity extends Activity {
 		}
 	}
 
-	//SINGLE PAIRS LOGIC START
-	// listener for a card button
-	class CardButtonListener implements OnClickListener {
-		Card matching_card;
-		Card current_card;
-		
-		private int computer_score;
-		private int user_score;
-		private int time_count;
-		
-		private ScheduledFuture future_task;
-		private ScheduledExecutorService countdown_timer = Executors
-				.newSingleThreadScheduledExecutor();
 
-		@Override
-		public void onClick(View v) {
-			synchronized (lock) {
-				
-				Card card = (Card)v; 
-				
-				// turning a card (no match available)  
-				if(matching_card == null){
-					// Iterate through the cards array to find matching card
-					Card c;
-					for (int y = 0; y < ROW_COUNT; y++) {
-						for (int x = 0; x < COL_COUNT; x++) {
-							c = cards[y][x];
-							
-							// if there's a match available, store it and set the countdown timer
-							if(c.isUp && c.id == card.id && c != card){
-								
-								//store the match
-								matching_card = c;
-								current_card = card; 
-								
-								// start timer
-								time_count = MAX_TIME;
-								future_task = countdown_timer.scheduleAtFixedRate(new Task(), 0, 1000, TimeUnit.MILLISECONDS);
-							}
-						}
-					}
-					
-					// turn the card over
-					card.setBackgroundDrawable(images.get(card.id));
-					card.isUp = true;
-				}
-				
-				// match is available, user clicks a matching card
-				else if(card == matching_card){
-					user_score ++;
-					endTurn();
-				}
-			}
-		}
-		
-		// implementation for countdown timer
-		// tics every second
-		// when time_count reaches 0 ( initial time_count value = MAX_TIME ) computer gets the score
-		class Task implements Runnable {
-
-			@Override
-			public void run() {
-				
-				// all UI changes need to be run on UI thread, 
-				// so using a wrapper
-				runOnUiThread(new Runnable() {
-				     @Override
-				     public void run() {
-				    	time_count --;
-				    	countdown_view.setText("Time left to find a match: " + time_count);
-						
-						if(time_count == 0) {
-							computer_score ++;
-					    	endTurn();
-						}
-				    	 
-				     }
-				});
-			}
-		}
-		
-		private void endTurn(){
-			future_task.cancel(true);
-			
-			//clear countdown
-			countdown_view.setText("");
-			
-			//update score
-			score_view.setText(user_score  + ":" + computer_score);
-			
-			//remove matching cards
-			matching_card.setVisibility(View.INVISIBLE);
-			current_card.setVisibility(View.INVISIBLE);
-			matching_card = null;
-			current_card = null;
-			
-			//check end game
-			int turns = user_score + computer_score;
-			if(turns == ROW_COUNT * COL_COUNT / 2){
-				String msg;
-				
-				if(user_score < computer_score) {
-					msg = "Defeat...";
-				}
-				else if(user_score > computer_score) {
-					msg = "Victory!";
-				}
-				else {
-					msg = "Draw.";
-				}
-				
-				// show end game messages
-				end_game_message.setText(msg);
-				game_grid_container.setVisibility(View.GONE);
-				end_game_message_container.setVisibility(View.VISIBLE);
-				reset_btn_container.setVisibility(View.VISIBLE);
-				
-				reset();
-			}
-		}
-		
-		private void  reset(){
-			computer_score = 0;
-			user_score = 0;
-			
-			// cancel countdown timer task if it's scheduled
-			if (future_task != null)
-				future_task.cancel(false);
-		}
-	}
-	//SINGLE PAIRS LOGIC END
 	
 	// GROUP PAIRS LOGIC START
 	class GroupButtonListener implements OnClickListener {
@@ -697,7 +587,7 @@ public class MainActivity extends Activity {
 				reset_btn_container.setVisibility(View.VISIBLE);
 				
 				reset();
-
+				
 			}
 		}
 		
