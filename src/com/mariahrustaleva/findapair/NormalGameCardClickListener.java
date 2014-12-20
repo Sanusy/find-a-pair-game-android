@@ -14,8 +14,8 @@ import android.widget.TableRow;
 import android.widget.TextView;
 
 class NormalGameCardClickListener implements OnClickListener {
-	Card matching_card;
-	Card current_card;
+	private Card matching_card;
+	private Card current_card;
 
 	private int computer_score;
 	private int user_score;
