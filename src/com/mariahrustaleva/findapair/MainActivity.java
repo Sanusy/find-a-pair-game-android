@@ -42,15 +42,6 @@ public class MainActivity extends Activity {
 	private TableRow reset_btn_container;
 	private Button reset_btn;
 
-	private int computer_score;
-	private int user_score;
-	private int time_count;
-	
-	private Card current_card;
-	private Card matching_card;
-	private ScheduledFuture future_task;
-	private ScheduledExecutorService countdown_timer;
-
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -71,9 +62,6 @@ public class MainActivity extends Activity {
 		cardCardButtonListener = new GroupButtonListener();
 		reset_btn.setOnClickListener(new ResetButtonListener());
 
-		// create countdaown timer
-		countdown_timer = Executors.newSingleThreadScheduledExecutor();
-
 		loadImages();
 		newGame();
 	}
@@ -92,21 +80,11 @@ public class MainActivity extends Activity {
 	}
 
 	private void newGame() {
-		// reset vars
-		current_card = null;
-		matching_card = null;
-		computer_score = 0;
-		user_score = 0;
-
 		// reset UI
-		score_view.setText(user_score + ":" + computer_score);
+		score_view.setText(0 + ":" + 0);
 		game_grid_container.setVisibility(View.VISIBLE);
 		end_game_message_container.setVisibility(View.GONE);
 		reset_btn_container.setVisibility(View.GONE);
-
-		// cancel countdown timer task if it's scheduled
-		if (future_task != null)
-			future_task.cancel(false);
 
 		// create deck
 		createShuffledDeck();
@@ -205,6 +183,14 @@ public class MainActivity extends Activity {
 
 	// listener for a card button
 	class GroupButtonListener implements OnClickListener {
+		private int computer_score;
+		private int user_score;
+		private int time_count;
+		
+		private ScheduledFuture future_task;
+		private ScheduledExecutorService countdown_timer = Executors
+				.newSingleThreadScheduledExecutor();
+
 		private ArrayList<Card> current_group;
 		private ArrayList<Integer> matching_groups_ids = new ArrayList<Integer>();
 
@@ -232,8 +218,8 @@ public class MainActivity extends Activity {
 					for (int x = 0; x < COL_COUNT; x++) {
 						c = cards[y][x];
 
-						if (c.isOnTable && c.isUp && c.id == card.id && c != card
-								&& !result.contains(c.group_id)) {
+						if (c.isOnTable && c.isUp && c.id == card.id
+								&& c != card && !result.contains(c.group_id)) {
 							result.add(c.group_id);
 						}
 					}
@@ -245,7 +231,7 @@ public class MainActivity extends Activity {
 
 		private void turnGroupOver(ArrayList<Card> group) {
 			for (Card card : group) {
-				card.setBackgroundDrawable(images.get(card.id));// bugged here once, coz index was -1
+				card.setBackgroundDrawable(images.get(card.id));
 				card.isUp = true;
 			}
 		}
@@ -395,11 +381,22 @@ public class MainActivity extends Activity {
 								end_game_message_container
 										.setVisibility(View.VISIBLE);
 								reset_btn_container.setVisibility(View.VISIBLE);
+								
+								reset();
 							}
 						});
 					}
 				}, delay, TimeUnit.MILLISECONDS);
 			}
+		}
+		
+		private void  reset(){
+			computer_score = 0;
+			user_score = 0;
+			
+			// cancel countdown timer task if it's scheduled
+			if (future_task != null)
+				future_task.cancel(false);
 		}
 	}
 }
